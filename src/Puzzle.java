@@ -114,3 +114,4 @@ public class Puzzle extends JFrame {
     }
 
 }
+//커밋 체크
