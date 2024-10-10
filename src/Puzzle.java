@@ -114,4 +114,4 @@ public class Puzzle extends JFrame {
     }
 
 }
-//커밋 체크
+//감자탕 브랜치 체크용
