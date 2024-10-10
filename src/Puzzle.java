@@ -114,4 +114,4 @@ public class Puzzle extends JFrame {
     }
 
 }
-//감자탕 브랜치 체크용 브랜치안의 브랜치
+//감자탕 브랜치 체크용 브랜치안의 브랜치 재확인
