@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Random;
+import java.io.*;
 
 public class Puzzle extends JFrame {
     JButton[][] btn_list; // 2차원 JButton 배열 선언 (퍼즐 타일)
@@ -18,6 +19,25 @@ public class Puzzle extends JFrame {
         this.setTitle("퍼즐게임"); // 제목
         this.setSize(800, 800); // 창의 크기
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // 창을 닫으면 프로그램 종료
+        this.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                int confirm = JOptionPane.showOptionDialog(
+                        null,
+                        "퍼즐 상태를 저장하고 종료하시겠습니까?",
+                        "종료 확인",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        null,
+                        null
+                );
+
+                if (confirm == JOptionPane.YES_OPTION) {
+                    SaveLoad.save(Puzzle.this); // 현재 상태 저장
+                }
+                System.exit(0); // 프로그램 종료
+            }
+        });
 
         puzzlePanel = this.getContentPane();        // puzzlePanel으로 getContentPane()에 접근
         puzzlePanel.setLayout(new GridLayout(row, col)); // 격자형태로 배치
@@ -43,7 +63,7 @@ public class Puzzle extends JFrame {
             }
         }
 
-        shuffle(100); // 퍼즐 섞기
+        shuffle(2); // 퍼즐 섞기
         this.setVisible(true); // 퍼즐판이 보이도록 설정
     }   // Puzzle 생성자 끝
 
@@ -74,7 +94,7 @@ public class Puzzle extends JFrame {
 
             // 유효한 이동인지 확인하고 이동
             if (!invalid_coord(new_x, new_y)) {
-                exchange(new int[]{blank_y, blank_x}, new int[]{new_y, new_x}); // 빈칸과 버튼 교환
+                swap_button(new int[]{blank_y, blank_x}, new int[]{new_y, new_x}); // 빈칸과 버튼 교환
                 refresh(); // 화면 새로고침
             }
         }
@@ -103,7 +123,7 @@ public class Puzzle extends JFrame {
         return null;
     }
 
-    void exchange(int[] clicked, int[] blank) {  // 버튼 교환
+    void swap_button(int[] clicked, int[] blank) {  // 매개변수로 받은 두 버튼의 위치 교환
         JButton temp = btn_list[clicked[0]][clicked[1]];
         btn_list[clicked[0]][clicked[1]] = btn_list[blank[0]][blank[1]];
         btn_list[blank[0]][blank[1]] = temp;
@@ -136,20 +156,20 @@ public class Puzzle extends JFrame {
         }
         // 위치 교환 처리
         if (clicked_pos != null) {
-            exchange(clicked_pos, blank_pos);   // 버튼 위치 교환
+            swap_button(clicked_pos, blank_pos);   // 버튼 위치 교환
             refresh();  // 퍼즐판 새로고침
-            is_end();   // 퍼즐이 완성되었는가?
+            is_end();   // 퍼즐이 완성되었는지 확인
             return true;
         }
         return false;
     }
 
-    boolean is_end() {
+    boolean is_end() {      //퍼즐 완성 여부 함수
         for (int i = 0; i < row; i++) {
             for (int j = 0; j < col; j++) {
                 int expected = i * col + j;
 
-                if (btn_list[i][j] == blank && blank.getText().equals("")) {
+                if (btn_list[i][j].getText().equals("")) {
                     continue;
                 }
 
@@ -159,22 +179,22 @@ public class Puzzle extends JFrame {
             }
         }
 
-        // 퍼즐 완성 시 성공 메시지 팝업창 표시
-        String[] options = {"메뉴로", "종료"};
+
+        String[] after_end_options = {"메뉴로", "종료"};   // 퍼즐 완성 시 메시지 처리
         int select = JOptionPane.showOptionDialog(this,
-                "퍼즐을 완성했습니다!\n",
+                "퍼즐을 완성했습니다.\n",
                 "성공!",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.INFORMATION_MESSAGE,
                 null,
-                options,
+                after_end_options,
                 null);
 
         if (select == 0) { // 메뉴를 선택하면
             this.dispose(); // 현재 창 닫기
-            PuzzleMenu.main(new String[]{}); // 메뉴 호출
+            PuzzleMenu.showMenu(); // 메뉴 호출
         }
-        
+
         else {  //종료를 선택하면
             System.exit(0); // 프로그램 종료
         }
@@ -183,8 +203,8 @@ public class Puzzle extends JFrame {
     }
 
     class ClickListener implements ActionListener {     //클릭 처리 리스너
-        public void actionPerformed(ActionEvent e) {
-            JButton btn = (JButton) e.getSource();
+        public void actionPerformed(ActionEvent e1) {
+            JButton btn = (JButton) e1.getSource();
             click_button(btn);
         }
     }
